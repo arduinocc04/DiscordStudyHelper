@@ -1,3 +1,4 @@
+from email import header
 import requests
 import asyncio
 import websockets
@@ -5,6 +6,7 @@ import nest_asyncio
 import json
 import typing
 import time
+import os
 
 API_VERSION = 8
 API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}'
@@ -28,11 +30,12 @@ headers = {
 }
 
 class WebSocketAPI:
-    def __init__(self):#, onMessage) -> None:
-        self.seq = "null"
+    def __init__(self, onMessage):#, onMessage) -> None:
+        self.seq = None
         self.heartbeatAckReceived = True
-        #self.onMessageCallBack = onMessage
+        self.onMessageCallBack = onMessage
         self.sendProblemBuffer = []
+        self.loop = None
         asyncio.run(self.init())
 
     async def init(self) -> None:
@@ -41,11 +44,12 @@ class WebSocketAPI:
         self.main()
 
     async def revive(self) -> None:
-        await self.disconnect(),
-        await self.connect(),
+        """
+        await self.connect()
         await self.sendResume()
         self.main()
-
+        """
+        await self.init()
     async def connect(self) -> None:
         self.ws = await websockets.connect(GATEWAY_ENDPOINT)
         data = await self.ws.recv()
@@ -57,10 +61,6 @@ class WebSocketAPI:
             print("Connection Failed.")
             await self.revive()
 
-    async def disconnect(self) -> None:
-        self.loop.close()
-        await self.ws.close()
-    
     async def sendPayload(self, op:int, d:dict) -> None:
         toSend = {
             "op": op,
@@ -86,64 +86,24 @@ class WebSocketAPI:
             data = await self.ws.recv()
             data = json.loads(data)
             print(data)
-            #print(f"{data['op']=}")
             if data['s'] != None:
                 self.seq = data['s']
             if data['op'] == 0:
                 if data['t'] == 'READY':
                     print('ready!')
+                    self.sessionId = data['d']['session_id']
+                elif data['t'] == 'RESUMED':
+                    print('resumed!')
                 else:
-                    httpAPI = HttpAPI(GUILD)
-                    if data['t'] == "INTERACTION_CREATE":
-                        httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
-                        userInBuffer = False
-                        for user, _, _, _ in self.sendProblemBuffer:
-                            if data['d']['member']['user']['id'] == user:
-                                userInBuffer = True
-                        if userInBuffer: 
-                            for i in range(len(self.sendProblemBuffer)):
-                                if self.sendProblemBuffer[i][0] == data['d']['member']['user']['id']:
-                                    del self.sendProblemBuffer[i]
-                                    break
-                        self.sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time()))
-                        
-                    elif data['t'] == 'MESSAGE_CREATE':
-                        while len(self.sendProblemBuffer):
-                            if time.time() - self.sendProblemBuffer[0][3] > 60 * 15:
-                                del self.sendProblemBuffer[0]
-                            else:
-                                break
-
-                        if len(self.sendProblemBuffer):
-                            if 'attachments' in data['d']:
-                                userInBuffer = False
-                                for user, token, iid, _ in self.sendProblemBuffer:
-                                    if data['d']['author']['id'] == user:
-                                        userInBuffer = True
-                                        userId = user
-                                        interactionToken = token
-                                        interactionId = iid
-                                        break
-                                if userInBuffer:
-                                    problemPicUrls = []
-                                    for attachment in data['d']['attachments']:
-                                        if 'image' in attachment['content_type']: problemPicUrls.append(attachment['url'])
-                                    httpAPI.deleteOriginalInteraction(interactionToken)
-                                    print(f'{problemPicUrls=}')
-                                    for pic in problemPicUrls:
-                                        httpAPI.sendFollowupInteractionEmbedImageUrl(interactionToken, pic)
-                                    for i in range(len(self.sendProblemBuffer)):
-                                        if self.sendProblemBuffer[i][0] == userId:
-                                            del self.sendProblemBuffer[i]
-                                            break
-                    #self.onMessageCallBack(data)
+                    self.onMessageCallBack(data)
             elif data['op'] == 1:
+                print('SEND HEARTBEAT NOW')
                 self.sendHeartbeat()
             elif data['op'] == 7:
                 await self.revive()
             elif data['op'] == 9:
                 print('INVALID SESSION!')
-                self.revive()
+                await self.init()
             elif data['op'] == 11:
                 self.heartbeatAckReceived = True
 
@@ -173,20 +133,17 @@ class WebSocketAPI:
             6,
             {
                 "token": f"{TOKEN}",
-                "seq": f"{self.seq}",
+                "seq": self.seq,
                 "session_id":f"{self.sessionId}"
             }
         )
 
 class HttpAPI:
     def __init__(self, guild=None):
-        if guild != None:
-            self.apiEndpoint = f"https://discord.com/api/v{API_VERSION}/applications/{CLIENT_ID}/guilds/{guild}/commands"
-        else:
-            self.apiEndpoint = f"https://discord.com/api/v{API_VERSION}/applications/{CLIENT_ID}/commands"
+        pass
     
     def sendInteractionMessage(self, interactionId:int, interactionToken:str, message:str):
-        interactionUrl = f'https://discord.com/api/v{API_VERSION}/interactions/{interactionId}/{interactionToken}/callback'
+        interactionUrl = API_ENDPOINT + f'/interactions/{interactionId}/{interactionToken}/callback'
         data = {
             'type':4,
             'data': {
@@ -196,24 +153,34 @@ class HttpAPI:
         requests.post(interactionUrl, json=data, headers=headers)
 
     def deleteOriginalInteraction(self, interactionToken:str):
-        interactionUrl = f'https://discord.com/api/v{API_VERSION}/webhooks/{CLIENT_ID}/{interactionToken}/messages/@original'
-        requests.delete(interactionUrl)
+        interactionUrl = API_ENDPOINT + f'/webhooks/{CLIENT_ID}/{interactionToken}/messages/@original'
+        requests.delete(interactionUrl, headers=headers)
 
-    def sendFollowupInteractionEmbedImageUrl(self, interactionToken:str, url:str):
-        interactionUrl = f'https://discord.com/api/v{API_VERSION}/webhooks/{CLIENT_ID}/{interactionToken}'
+    def sendPicToChannel(self, url:str, channelId:int):
+        interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
         data = {
-            'type':4,
-            'data': {
-                'embeds': [{
-                    'image':{
-                        'url': url
-                    }
-                }]
+          "embeds": [{
+            "type": 'image',
+            "image": {
+                "url": url,
+                'content_type': "image/jpeg"
             }
+          }]
         }
-        requests.post(interactionUrl, json=data, headers=headers)
+        res = requests.post(interactionUrl, json=data, headers=headers)
+        print(f'{res.text=}')
+    
+    def delMessage(self, channelId:int, messageId:int):
+        interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages/{messageId}'
+        requests.delete(interactionUrl, headers=headers)
+    
+    def createReaction(self, channelId:int, messageId:int, emoji:str):
+        interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages/{messageId}/reactions/{emoji}/@me'
+        res = requests.put(interactionUrl, headers=headers)
+        print(f'crreaction {res.status_code=}')
     
     #def makeChatInputTypeCommand(self, name:str, description:str, )
-
+def f(m):
+    pass
 if __name__ == "__main__":
-    a = WebSocketAPI()
+    a = WebSocketAPI(f)
