@@ -10,7 +10,8 @@ with open('urI.txt', 'r') as f:
     REDIRECT_URI = f.readline().rstrip()
 with open('testguild.txt', 'r') as f:
     GUILD = f.readline().rstrip()
-url = f"https://discord.com/api/v8/applications/{CLIENT_ID}/guilds/{GUILD}/commands"
+API_VERSION = 8
+url = f"https://discord.com/api/v{API_VERSION}/applications/{CLIENT_ID}/guilds/{GUILD}/commands"
 
 # This is an example CHAT_INPUT or Slash Command, with a type of 1
 json = {

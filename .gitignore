@@ -1,3 +1,4 @@
 *.txt
 GATEWAY.md
 *.json
+__pycache__/
