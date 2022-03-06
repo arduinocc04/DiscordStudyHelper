@@ -1,9 +1,16 @@
 import api
 import os
 import time
+import logging
 with open('testguild.txt', 'r') as f:
     GUILD = f.readline().rstrip()
 sendProblemBuffer = []
+
+logger = logging.getLogger('MAIN LOGGER')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(api.streamHandler)
+logger.addHandler(api.fileHandler)
+
 def onMessage(data):
     httpAPI = api.HttpAPI(GUILD)
     if data['t'] == "INTERACTION_CREATE":
@@ -12,12 +19,14 @@ def onMessage(data):
         for user, _, _, _ in sendProblemBuffer:
             if data['d']['member']['user']['id'] == user:
                 userInBuffer = True
+        logger.info(f'{sendProblemBuffer=}')
         if userInBuffer: 
             for i in range(len(sendProblemBuffer)):
                 if sendProblemBuffer[i][0] == data['d']['member']['user']['id']:
                     del sendProblemBuffer[i]
                     break
         sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time()))
+        logger.info(f'{sendProblemBuffer=}')
         
     elif data['t'] == 'MESSAGE_CREATE':
         if 'embeds' in data['d'] and len(data['d']['embeds']) and api.CLIENT_ID == data['d']['author']['id']:
@@ -44,16 +53,13 @@ def onMessage(data):
                     for attachment in data['d']['attachments']:
                         if 'image' in attachment['content_type']: problemPicUrls.append(attachment['url'])
                     httpAPI.deleteOriginalInteraction(interactionToken)
-                    print(f'{problemPicUrls=}')
                     for pic in problemPicUrls:
-                        #os.system('curl ' + pic[0] + f" > images/{pic[1]}")
                         httpAPI.sendPicToChannel(pic, data['d']['channel_id'])
                     for i in range(len(sendProblemBuffer)):
                         if sendProblemBuffer[i][0] == userId:
                             del sendProblemBuffer[i]
                             break
                     httpAPI.delMessage(data['d']['channel_id'], data['d']['id'])
-                
 
 if __name__ == '__main__':
     app = api.WebSocketAPI(onMessage=onMessage)

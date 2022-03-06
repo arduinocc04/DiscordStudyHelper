@@ -3,3 +3,4 @@ GATEWAY.md
 *.json
 __pycache__/
 images/
+logs/
