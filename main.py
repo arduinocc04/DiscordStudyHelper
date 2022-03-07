@@ -1,9 +1,9 @@
+from numpy import dtype
 import api
 import os
 import time
 import logging
-with open('testguild.txt', 'r') as f:
-    GUILD = f.readline().rstrip()
+
 sendProblemBuffer = []
 
 logger = logging.getLogger('MAIN LOGGER')
@@ -12,9 +12,20 @@ logger.addHandler(api.streamHandler)
 logger.addHandler(api.fileHandler)
 
 def onMessage(data):
-    httpAPI = api.HttpAPI(GUILD)
+    httpAPI = api.HttpAPI(api.GUILD)
     if data['t'] == "INTERACTION_CREATE":
-        if(data['d']['author']['id'] != api.CLIENT_ID) httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
+        if (not 'message' in data['d']) or  data['d']['message']['author']['id'] != api.CLIENT_ID: httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
+        else:
+            if data['d']['data']['component_type'] == 2 and data['d']['type'] == 3:
+                if data['d']['data']['custom_id'] == 'solve_button':
+                    httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'solve')
+                    #httpAPI.deleteOriginalInteraction(data['d']['token'])
+                elif data['d']['data']['custom_id'] == 'unsolve_button':
+                    httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'unsolve')
+                elif data['d']['data']['custom_id'] == 'bookmark_button':
+                    httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'bookmark')
+                else:
+                    pass
         userInBuffer = False
         for user, _, _, _ in sendProblemBuffer:
             if data['d']['member']['user']['id'] == user:
@@ -26,7 +37,7 @@ def onMessage(data):
                     del sendProblemBuffer[i]
                     break
 
-        if(data['d']['member']['user']['id'] != api.CLIENT_ID) sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time()))
+        if data['d']['member']['user']['id'] != api.CLIENT_ID: sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time(), data['d']['data']['options'][0]['value']))
         logger.info(f'{sendProblemBuffer=}')
         
     elif data['t'] == 'MESSAGE_CREATE':
@@ -42,12 +53,13 @@ def onMessage(data):
         if len(sendProblemBuffer):
             if 'attachments' in data['d']:
                 userInBuffer = False
-                for user, token, iid, _ in sendProblemBuffer:
+                for user, token, iid, _, s in sendProblemBuffer:
                     if data['d']['author']['id'] == user:
                         userInBuffer = True
                         userId = user
                         interactionToken = token
                         interactionId = iid
+                        subject = s
                         break
                 if userInBuffer:
                     problemPicUrls = []
@@ -55,7 +67,7 @@ def onMessage(data):
                         if 'image' in attachment['content_type']: problemPicUrls.append(attachment['url'])
                     httpAPI.deleteOriginalInteraction(interactionToken)
                     for pic in problemPicUrls:
-                        httpAPI.sendPicToChannel(pic, data['d']['channel_id'])
+                        httpAPI.sendPicToChannelWithMentionAndContent(pic, data['d']['channel_id'], data['d']['author']['id'], subject)
                     for i in range(len(sendProblemBuffer)):
                         if sendProblemBuffer[i][0] == userId:
                             del sendProblemBuffer[i]

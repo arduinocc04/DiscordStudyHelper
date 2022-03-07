@@ -72,7 +72,7 @@ class WebSocketAPI:
             self.heartbeatInterval = data['d']['heartbeat_interval']
             logger.debug(f'heartbeatInterval: {self.heartbeatInterval}')
         else:
-            logger.warning('WebsocketAPI Connection Failed')
+            logger.info('WebsocketAPI Connection Failed')
             await self.revive()
 
     async def sendPayload(self, op:int, d:dict) -> None:
@@ -118,7 +118,7 @@ class WebSocketAPI:
                 logger.info('WebsocketAPI reconnect(op:7)')
                 await self.revive()
             elif data['op'] == 9:
-                logger.warning('WebsocketAPI Invalid session')
+                logger.info('WebsocketAPI Invalid session')
                 await self.init()
             elif data['op'] == 11:
                 logger.debug('WebsocketAPI heartbeat ACK')
@@ -179,6 +179,15 @@ class HttpAPI:
         res = requests.delete(interactionUrl, headers=headers)
         logger.debug(f'HttpAPI deleteOriginalInteraction res {res.status_code=} {res.text=}')
 
+    def sendMessageToChannel(self, message:str, channelId:int):
+        logger.debug(f'HttpAPI sendMessageToChannel message:{message} channelId:{channelId}')
+        interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
+        data = {
+          "content": message
+        }
+        res = requests.post(interactionUrl, json=data, headers=headers)
+        logger.info(f'HttpAPI sendMessageToChannel res {res.status_code=} {res.text=}')
+
     def sendPicToChannel(self, url:str, channelId:int):
         logger.debug(f'HttpAPI sendPicToChannel url:{url} channelId:{channelId}')
         interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
@@ -218,6 +227,50 @@ class HttpAPI:
         }
         res = requests.post(interactionUrl, json=data, headers=headers)
         logger.info(f'HttpAPI sendPicToChannel res {res.status_code=} {res.text=}')
+    
+    def sendPicToChannelWithMentionAndContent(self, url:str, channelId:int, mention:str, message:str):
+        logger.debug(f'HttpAPI sendPicToChannelWithMentionAndContent url:{url} channelId:{channelId}')
+        interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
+        data = {
+          "content": f'<@{mention}> {message}',
+          "allowed_mentions": {
+              "parse": ["users"]
+          },
+          "embeds": [{
+            "type": 'image',
+            "image": {
+                "url": url,
+                'content_type': "image/jpeg"
+            },
+          }],
+          "components": [
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "Solved",
+                            "style": 1,
+                            "custom_id": 'solve_button'
+                        },
+                        {
+                            "type": 2,
+                            "label": "Unsolved",
+                            "style": 1,
+                            "custom_id": 'unsolve_button'
+                        },
+                        {
+                            "type": 2,
+                            "label": "Bookmark",
+                            "style": 1,
+                            "custom_id": 'bookmark_button'
+                        }
+                    ]
+                }
+            ]
+        }
+        res = requests.post(interactionUrl, json=data, headers=headers)
+        logger.info(f'HttpAPI sendPicToChannelWithMentionAndContent res {res.status_code=} {res.text=}')
     
     def delMessage(self, channelId:int, messageId:int):
         logger.debug(f'HttpAPI delMessage messageId:{messageId} channelId:{channelId}')
