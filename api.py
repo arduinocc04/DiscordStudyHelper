@@ -198,13 +198,13 @@ class HttpAPI:
                             "label": "Solved",
                             "style": 1,
                             "custom_id": 'solve_button'
-                        }
+                        },
                         {
                             "type": 2,
                             "label": "Unsolved",
                             "style": 1,
                             "custom_id": 'unsolve_button'
-                        }
+                        },
                         {
                             "type": 2,
                             "label": "Bookmark",
