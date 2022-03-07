@@ -217,7 +217,7 @@ class HttpAPI:
           }]
         }
         res = requests.post(interactionUrl, json=data, headers=headers)
-        logger.debug(f'HttpAPI sendPicToChannel res {res.status_code=} {res.text=}')
+        logger.info(f'HttpAPI sendPicToChannel res {res.status_code=} {res.text=}')
     
     def delMessage(self, channelId:int, messageId:int):
         logger.debug(f'HttpAPI delMessage messageId:{messageId} channelId:{channelId}')
