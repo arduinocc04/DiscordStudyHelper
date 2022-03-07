@@ -189,7 +189,8 @@ class HttpAPI:
                 "url": url,
                 'content_type': "image/jpeg"
             },
-            "components": [
+          }],
+          "components": [
                 {
                     "type": 1,
                     "components": [
@@ -214,7 +215,6 @@ class HttpAPI:
                     ]
                 }
             ]
-          }]
         }
         res = requests.post(interactionUrl, json=data, headers=headers)
         logger.info(f'HttpAPI sendPicToChannel res {res.status_code=} {res.text=}')
