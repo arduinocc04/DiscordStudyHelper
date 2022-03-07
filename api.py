@@ -9,6 +9,7 @@ import time
 import os
 
 API_VERSION = 8
+OS_NAME = 'linux'
 API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}'
 GATEWAY_ENDPOINT = f"wss://gateway.discord.gg/?v={API_VERSION}&encoding=json"
 with open('clientId.txt', 'r') as f:
@@ -42,13 +43,11 @@ headers = {
 }
 
 class WebSocketAPI:
-    def __init__(self, onMessage):#, onMessage) -> None:
+    def __init__(self, onMessage) -> None:
         logger.debug('WebSocketAPI __init__')
         self.seq = None
         self.heartbeatAckReceived = True
         self.onMessageCallBack = onMessage
-        self.sendProblemBuffer = []
-        self.loop = None
         asyncio.run(self.init())
 
     async def init(self) -> None:
@@ -60,9 +59,9 @@ class WebSocketAPI:
     async def revive(self) -> None:
         logger.debug('WebsocketAPI revive')
         await self.connect()
+        await asyncio.sleep(1)
         await self.sendResume()
-        #self.main()
-        #await self.init()
+
     async def connect(self) -> None:
         logger.debug('WebsocketAPI connect')
         self.ws = await websockets.connect(GATEWAY_ENDPOINT)
@@ -139,7 +138,7 @@ class WebSocketAPI:
                 "token": f"{TOKEN}",
                 "intents": 15915,
                 "properties": {
-                    "$os": "linux",
+                    "$os": OS_NAME,
                     "$browser": "disco",
                     "$device": "disco"
                 }
@@ -160,6 +159,13 @@ class WebSocketAPI:
 class HttpAPI:
     def __init__(self, guild=None):
         pass
+
+    def getGuildMembers(self, guildId:int) -> dict:
+        logger.debug(f'HttpAPI getGuildMembers guildId:{guildId}')
+        interactionUrl = API_ENDPOINT + f'/guilds/{guildId}/members?limit=1000'
+        res = requests.get(interactionUrl, headers=headers)
+        logger.debug(f'HttpAPI getGuildMembers res {res.status_code=} {res.text=}')
+        return res.json()
     
     def sendInteractionMessage(self, interactionId:int, interactionToken:str, message:str):
         logger.debug(f'HttpAPI sendInteractionMessage id:{interactionId} token:{interactionToken} message:{message}')

@@ -5,6 +5,7 @@ import time
 import logging
 
 sendProblemBuffer = []
+solveState = {}
 
 logger = logging.getLogger('MAIN LOGGER')
 logger.setLevel(logging.DEBUG)
@@ -19,30 +20,43 @@ def onMessage(data):
             if data['d']['data']['component_type'] == 2 and data['d']['type'] == 3:
                 if data['d']['data']['custom_id'] == 'solve_button':
                     httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'solve')
-                    #httpAPI.deleteOriginalInteraction(data['d']['token'])
+                    solveState[data['d']['message']['id']][data['d']['member']['user']['id']] = True
                 elif data['d']['data']['custom_id'] == 'unsolve_button':
                     httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'unsolve')
+                    solveState[data['d']['message']['id']][data['d']['member']['user']['id']] = False
                 elif data['d']['data']['custom_id'] == 'bookmark_button':
                     httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'bookmark')
                 else:
                     pass
-        userInBuffer = False
-        for user, _, _, _ in sendProblemBuffer:
-            if data['d']['member']['user']['id'] == user:
-                userInBuffer = True
-        logger.info(f'{sendProblemBuffer=}')
-        if userInBuffer: 
-            for i in range(len(sendProblemBuffer)):
-                if sendProblemBuffer[i][0] == data['d']['member']['user']['id']:
-                    del sendProblemBuffer[i]
-                    break
+                logger.info(f'{solveState=}')
+        if data['d']['member']['user']['id'] != api.CLIENT_ID and data['d']['type'] == 2: 
+            userInBuffer = False
+            for user, _, _, _ in sendProblemBuffer:
+                if data['d']['member']['user']['id'] == user:
+                    userInBuffer = True
+            logger.info(f'{sendProblemBuffer=}')
+            if userInBuffer: 
+                for i in range(len(sendProblemBuffer)):
+                    if sendProblemBuffer[i][0] == data['d']['member']['user']['id']:
+                        del sendProblemBuffer[i]
+                        break
 
-        if data['d']['member']['user']['id'] != api.CLIENT_ID: sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time(), data['d']['data']['options'][0]['value']))
+            sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time(), data['d']['data']['options'][0]['value']))
         logger.info(f'{sendProblemBuffer=}')
         
     elif data['t'] == 'MESSAGE_CREATE':
-        #if 'embeds' in data['d'] and len(data['d']['embeds']) and api.CLIENT_ID == data['d']['author']['id']:
-        #    httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], '%E2%AD%95%0A')
+        if data['d']['author']['id'] == api.CLIENT_ID and data['d']['type'] == 0:
+            members = httpAPI.getGuildMembers(data['d']['guild_id'])
+            users = []
+            for mem in members:
+                if 'bot' in mem['user'] and mem['user']['bot']:
+                    pass
+                else:
+                    users.append(mem['user']['id'])
+            logger.info(f'{users=}')
+            solveState[data['d']['id']] = {}
+            for uid in users:
+                solveState[data['d']['id']][uid] = False
 
         while len(sendProblemBuffer):
             if time.time() - sendProblemBuffer[0][3] > 60 * 15:
