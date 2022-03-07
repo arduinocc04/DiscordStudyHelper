@@ -188,7 +188,32 @@ class HttpAPI:
             "image": {
                 "url": url,
                 'content_type': "image/jpeg"
-            }
+            },
+            "components": [
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "Solved",
+                            "style": 1,
+                            "custom_id": 'solve_button'
+                        }
+                        {
+                            "type": 2,
+                            "label": "Unsolved",
+                            "style": 1,
+                            "custom_id": 'unsolve_button'
+                        }
+                        {
+                            "type": 2,
+                            "label": "Bookmark",
+                            "style": 1,
+                            "custom_id": 'bookmark_button'
+                        }
+                    ]
+                }
+            ]
           }]
         }
         res = requests.post(interactionUrl, json=data, headers=headers)
