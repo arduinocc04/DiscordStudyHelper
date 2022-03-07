@@ -14,7 +14,7 @@ logger.addHandler(api.fileHandler)
 def onMessage(data):
     httpAPI = api.HttpAPI(GUILD)
     if data['t'] == "INTERACTION_CREATE":
-        httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
+        if(data['d']['author']['id'] != api.CLIENT_ID) httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
         userInBuffer = False
         for user, _, _, _ in sendProblemBuffer:
             if data['d']['member']['user']['id'] == user:
