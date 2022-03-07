@@ -61,7 +61,7 @@ class WebSocketAPI:
         logger.debug('WebsocketAPI revive')
         await self.connect()
         await self.sendResume()
-        self.main()
+        #self.main()
         #await self.init()
     async def connect(self) -> None:
         logger.debug('WebsocketAPI connect')
