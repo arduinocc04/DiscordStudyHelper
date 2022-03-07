@@ -25,12 +25,13 @@ def onMessage(data):
                 if sendProblemBuffer[i][0] == data['d']['member']['user']['id']:
                     del sendProblemBuffer[i]
                     break
-        sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time()))
+
+        if(data['d']['member']['user']['id'] != api.CLIENT_ID) sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time()))
         logger.info(f'{sendProblemBuffer=}')
         
     elif data['t'] == 'MESSAGE_CREATE':
-        if 'embeds' in data['d'] and len(data['d']['embeds']) and api.CLIENT_ID == data['d']['author']['id']:
-            httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], '%E2%AD%95%0A')
+        #if 'embeds' in data['d'] and len(data['d']['embeds']) and api.CLIENT_ID == data['d']['author']['id']:
+        #    httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], '%E2%AD%95%0A')
 
         while len(sendProblemBuffer):
             if time.time() - sendProblemBuffer[0][3] > 60 * 15:
