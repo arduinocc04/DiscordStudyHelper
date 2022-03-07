@@ -1,4 +1,3 @@
-from numpy import dtype
 import api
 import os
 import time
