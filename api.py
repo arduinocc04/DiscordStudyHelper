@@ -46,12 +46,12 @@ class WebSocketAPI:
         self.heartbeatAckReceived = True
         self.onMessageCallBack = onMessage
         asyncio.run(self.init())
+        self.main()
 
     async def init(self) -> None:
         logger.debug('WebsocketAPI init')
         await self.connect()
         await self.sendIdentifyPayload()
-        self.main()
 
     async def revive(self) -> None:
         logger.debug('WebsocketAPI revive')
@@ -98,16 +98,19 @@ class WebSocketAPI:
         while True:
             data = await self.ws.recv()
             data = json.loads(data)
-            logger.info(f'WebsocketAPI data received\n{data}')
+            logger.debug(f'WebsocketAPI data received\n{data}')
             if data['s'] != None:
                 self.seq = data['s']
+
             if data['op'] == 0:
                 if data['t'] == 'READY':
-                    logger.debug('WebsocketAPI Ready')
+                    logger.info('WebsocketAPI Ready')
                     self.sessionId = data['d']['session_id']
                 elif data['t'] == 'RESUMED':
                     logger.info('WebsocketAPI Resumed')
                 else:
+                    t = data['t']
+                    logger.info(f'WebsocketAPI {t}')
                     self.onMessageCallBack(data)
             elif data['op'] == 1:
                 logger.info('WebsocketAPI sendHeartbeatnow(op:1)')
@@ -288,8 +291,7 @@ class HttpAPI:
         interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages/{messageId}/reactions/{emoji}/@me'
         res = requests.put(interactionUrl, headers=headers)
         logger.debug(f'HttpAPI createReaction res {res.status_code=} {res.text=}')
-    
-    #def makeChatInputTypeCommand(self, name:str, description:str, )
+
 def f(m):
     pass
 if __name__ == "__main__":
