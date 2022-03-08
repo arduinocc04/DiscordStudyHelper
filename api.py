@@ -4,9 +4,6 @@ import asyncio
 import websockets
 import nest_asyncio
 import json
-import typing
-import time
-import os
 
 API_VERSION = 8
 OS_NAME = 'linux'
@@ -52,19 +49,21 @@ class WebSocketAPI:
 
     async def init(self) -> None:
         logger.debug('WebsocketAPI init')
-        await self.connect(),
+        await self.connect()
         await self.sendIdentifyPayload()
         self.main()
 
     async def revive(self) -> None:
         logger.debug('WebsocketAPI revive')
         await self.connect()
-        await asyncio.sleep(1)
         await self.sendResume()
 
     async def connect(self) -> None:
         logger.debug('WebsocketAPI connect')
-        self.ws = await websockets.connect(GATEWAY_ENDPOINT)
+        try:
+            self.ws = await websockets.connect(GATEWAY_ENDPOINT, ping_timeout=None, ping_interval=None)
+        except websockets.exceptions.ConnectionClosedError:
+            self.revive()
         data = await self.ws.recv()
         data = json.loads(data)
         if data['op'] == 10:
