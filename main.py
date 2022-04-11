@@ -2,10 +2,13 @@ import api
 import time
 import logging
 import json
+import os
 
 sendProblemBuffer = []
 with open('solveState.json', 'r') as f:
     solveState = json.loads(f.readline())
+with open('myIp.txt', 'r') as f:
+    MY_IP = f.readline()
 
 logger = logging.getLogger('MAIN LOGGER')
 logger.setLevel(logging.DEBUG)
@@ -89,8 +92,12 @@ def onMessage(data):
                         for attachment in data['d']['attachments']:
                             if 'image' in attachment['content_type']: problemPicUrls.append(attachment['url'])
                         httpAPI.deleteOriginalInteraction(interactionToken)
+                        imgI = 0
                         for pic in problemPicUrls:
-                            httpAPI.sendPicToChannelWithMentionAndContent(pic, data['d']['channel_id'], data['d']['author']['id'], subject)
+                            os.system("curl " + pic + " > problems/" + data['d']['id'] + "_" + str(imgI) + ".jpg")
+                            url = MY_IP + "/problems/"+ data['d']['id'] + "_" + str(imgI) + ".jpg"
+                            httpAPI.sendPicToChannelWithMentionAndContent(url, data['d']['channel_id'], data['d']['author']['id'], subject)
+                            imgI += 1
                         for i in range(len(sendProblemBuffer)):
                             if sendProblemBuffer[i][0] == userId:
                                 del sendProblemBuffer[i]
