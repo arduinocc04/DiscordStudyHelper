@@ -8,7 +8,7 @@ def home():
 
 @app.route('/problems/<id>')
 def problems(id):
-    return send_file('problems/' + id, mimetype='image/png')
+    return send_file('problems/' + id, mimetype='image/jpeg')
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=80)
