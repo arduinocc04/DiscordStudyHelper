@@ -244,7 +244,7 @@ class HttpAPI:
           "allowed_mentions": {
               "parse": ["users"]
           },
-          "embeds": [{
+          "attachments": [{
             "type": 'image',
             "image": {
                 "url": url,
