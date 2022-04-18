@@ -244,11 +244,11 @@ class HttpAPI:
           "allowed_mentions": {
               "parse": ["users"]
           },
-          "attachments": [{
+          "embeds": [{
             "type": 'image',
             "image": {
                 "url": url,
-                'content_type': "image/jpeg"
+                'content_type': "image/jpeg",
             },
           }],
           "components": [
