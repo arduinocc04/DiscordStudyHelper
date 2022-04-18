@@ -117,7 +117,7 @@ json = {
                    "value": "me"
                },
                {
-                   "name": "all"
+                   "name": "all",
                    "value": "all"
                }
            ]
