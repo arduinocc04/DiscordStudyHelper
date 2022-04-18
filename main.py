@@ -95,7 +95,7 @@ def onMessage(data):
                         imgI = 0
                         for pic in problemPicUrls:
                             os.system("curl " + pic + " > problems/" + data['d']['id'] + "_" + str(imgI) + ".jpg")
-                            url = MY_IP + "/problems/"+ data['d']['id'] + "_" + str(imgI) + ".jpg"
+                            url = "https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2FMjAyMTA2MDRfMzYg%2FMDAxNjIyODE2NTcyNDQz.h--002PNdFHWozwGVCDOCpeJfveCbf0FVUvLK1InraYg.iHziaVwiBwFIDrq4kQ8_e1ruLU50R1BbZ_8hS73v0L8g.PNG.xenomorph747%2FWar_Thunder_Screenshot_2021.06.04_-_01.55.47.20.png&type=a340"
                             httpAPI.sendPicToChannelWithMentionAndContent(url, data['d']['channel_id'], data['d']['author']['id'], subject)
                             imgI += 1
                         for i in range(len(sendProblemBuffer)):
