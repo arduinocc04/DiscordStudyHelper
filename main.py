@@ -96,7 +96,6 @@ def onMessage(data):
                         for pic in problemPicUrls:
                             os.system("curl " + pic + " > problems/" + data['d']['id'] + "_" + str(imgI) + ".jpg")
                             url = MY_IP + "/problems/"+ data['d']['id'] + "_" + str(imgI) + ".jpg"
-                            print(url)
                             httpAPI.sendPicToChannelWithMentionAndContent(url, data['d']['channel_id'], data['d']['author']['id'], subject)
                             imgI += 1
                         for i in range(len(sendProblemBuffer)):
