@@ -99,6 +99,37 @@ headers = {
     "Authorization": f"Bot {TOKEN}"
 }
 
-r = requests.post(url, headers=headers, json=json)
+#r = requests.post(url, headers=headers, json=json)
 
+json = {
+    "name": "bookmarks",
+    "type": 1,
+    "description": "Show bookmarked problems",
+    "options": [
+        {
+           "name": "range", 
+           "description": "range",
+           "type": 3,
+           "required": True,
+           "choices": [
+               {
+                   "name": "me",
+                   "value": "me"
+               },
+               {
+                   "name": "all"
+                   "value": "all"
+               }
+           ]
+        }
+    ]
+}
+
+r = requests.post(url, headers=headers, json=json)
+json = {
+    "name": "unSolved",
+    "type": 1,
+    "description": "Show unsolved problems by me"
+}
+r = requests.post(url, headers=headers, json=json)
 print(r.text)
