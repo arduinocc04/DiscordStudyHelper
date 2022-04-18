@@ -127,7 +127,7 @@ json = {
 
 r = requests.post(url, headers=headers, json=json)
 json = {
-    "name": "unSolved",
+    "name": "unsolved",
     "type": 1,
     "description": "Show unsolved problems by me"
 }
