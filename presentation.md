@@ -12,6 +12,10 @@ backgroundImage: url('https://marp.app/assets/hero-background.svg')
 
 ---
 
+# 만들게 된 이유
+
+---
+
 # 기능
 - 사진으로 문제 올리기
 - 누가 풀었고 안 풀었는지 확인
@@ -47,3 +51,10 @@ backgroundImage: url('https://marp.app/assets/hero-background.svg')
 
 # 디스코드 API 작동 방식
 
+---
+
+---
+
+# 코드
+
+https://github.com/arduinocc04/DiscordStudyHelper
