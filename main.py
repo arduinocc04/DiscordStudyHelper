@@ -3,6 +3,7 @@ import time
 import logging
 import json
 import os
+import urllib.request
 
 sendProblemBuffer = []
 with open('solveState.json', 'r') as f:
@@ -94,7 +95,8 @@ def onMessage(data):
                         httpAPI.deleteOriginalInteraction(interactionToken)
                         imgI = 0
                         for pic in problemPicUrls:
-                            os.system("curl " + pic + " > problems/" + data['d']['id'] + "_" + str(imgI) + ".jpg")
+                            urllib.request.urlretrieve(pic, "problems/" + data['d']['id'] + "_" + str(imgI) + ".jpg")
+                            #os.system("curl " + pic + " > problems/" + data['d']['id'] + "_" + str(imgI) + ".jpg")
                             url = MY_IP + "/problems/"+ data['d']['id'] + "_" + str(imgI) + ".jpg"
                             httpAPI.sendPicToChannelWithMentionAndContent(url, data['d']['channel_id'], data['d']['author']['id'], subject)
                             imgI += 1
