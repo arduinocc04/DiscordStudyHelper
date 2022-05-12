@@ -196,11 +196,11 @@ class HttpAPI:
         res = requests.post(interactionUrl, json=data, headers=headers)
         logger.info(f'HttpAPI sendMessageToChannel res {res.status_code=} {res.text=}')
 
-    def replyMessage(self, channelId:int, messageId:int):
+    def replyMessage(self, channelId:int, messageId:int, content:str = 'this'):
         logger.debug(f'HttpAPI replyMessage messageId: {messageId}')
         interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
         data = {
-          "content": "this",
+          "content": content,
           "type":19,
           "message_reference": {
               "message_id": messageId

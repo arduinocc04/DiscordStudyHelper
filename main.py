@@ -59,12 +59,36 @@ def onMessage(data):
 
                     sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time(), data['d']['data']['options'][0]['value']))
                     logger.info(f'{sendProblemBuffer=}')
-            if data['d']['data']['name'] == 'solved':
+            elif data['d']['data']['name'] == 'solved':
                 if (not 'message' in data['d']) or  data['d']['message']['author']['id'] != api.CLIENT_ID: 
                     httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
                     for a in solveState.keys():
                         if solveState[a][data['d']['member']['user']['id']]:
                             httpAPI.replyMessage(data['d']['channel_id'], a)
+            elif data['d']['data']['name'] == 'unsolved':
+                if (not 'message' in data['d']) or  data['d']['message']['author']['id'] != api.CLIENT_ID: 
+                    httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
+                    for a in solveState.keys():
+                        if not solveState[a][data['d']['member']['user']['id']]:
+                            httpAPI.replyMessage(data['d']['channel_id'], a)
+            elif data['d']['data']['name'] == 'bookmarks':
+                if (not 'message' in data['d']) or  data['d']['message']['author']['id'] != api.CLIENT_ID: 
+                    if data['d']['data']['options']['value'] == 'all':
+                        httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
+                        for a in solveState.keys():
+                            cnt = 0
+                            total = 0
+                            for i in bookmarkState[a]:
+                                if i: cnt += 1
+                                total += 1
+                            if cnt:
+                                httpAPI.replyMessage(data['d']['channel_id'], a, f'{cnt}/{total}명이 북마크 함')
+                    elif data['d']['data']['options']['value'] == 'me':
+                        httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
+                        for a in solveState.keys():
+                            if bookmarkState[a][data['d']['member']['user']['id']]:
+                                httpAPI.replyMessage(data['d']['channel_id'], a)
+                    
         """
         elif data['d']['type'] == 3: #MESSAGE_COMPONENT
             if data['d']['data']['component_type'] == 2: #solve, unsolve, bookmark Interaction
