@@ -64,7 +64,7 @@ def onMessage(data):
                     httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
                     for a in solveState.keys():
                         if solveState[a][data['d']['member']['user']['id']]:
-                            httpAPI.replyMessage(data['d']['channel_id'], data['d']['member']['user']['id'])
+                            httpAPI.replyMessage(data['d']['channel_id'], a)
         """
         elif data['d']['type'] == 3: #MESSAGE_COMPONENT
             if data['d']['data']['component_type'] == 2: #solve, unsolve, bookmark Interaction
