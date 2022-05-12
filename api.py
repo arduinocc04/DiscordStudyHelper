@@ -201,6 +201,7 @@ class HttpAPI:
         interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
         data = {
           "content": "",
+          "type":19,
           "message_reference": {
               "message_id": messageId
           }

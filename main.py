@@ -60,9 +60,11 @@ def onMessage(data):
                     sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time(), data['d']['data']['options'][0]['value']))
                     logger.info(f'{sendProblemBuffer=}')
             if data['d']['data']['name'] == 'solved':
-                for a in solveState.keys():
-                    if solveState[a][data['d']['member']['user']['id']]:
-                        httpAPI.replyMessage(data['d']['channel_id'], data['d']['member']['user']['id'])
+                if (not 'message' in data['d']) or  data['d']['message']['author']['id'] != api.CLIENT_ID: 
+                    httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
+                    for a in solveState.keys():
+                        if solveState[a][data['d']['member']['user']['id']]:
+                            httpAPI.replyMessage(data['d']['channel_id'], data['d']['member']['user']['id'])
         """
         elif data['d']['type'] == 3: #MESSAGE_COMPONENT
             if data['d']['data']['component_type'] == 2: #solve, unsolve, bookmark Interaction
