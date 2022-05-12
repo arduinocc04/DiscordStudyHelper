@@ -22,23 +22,23 @@ def onMessage(data):
     if data['t'] == "MESSAGE_REACTION_ADD":
         if data['d']['member']['user']['id'] != api.CLIENT_ID:
             if data['d']['emoji']['name'] == '❌':
-                solveState[data['d']['message']['id']][data['d']['member']['user']['id']] = False
+                solveState[data['d']['message_id']][data['d']['member']['user']['id']] = False
                 httpAPI.sendMessageToChannel("unsolved!", data['d']['channel_id'])
                 with open('solveState.json', 'w') as f:
                     f.write(json.dumps(solveState))
             elif data['d']['emoji']['name'] == '⭕':
-                solveState[data['d']['message']['id']][data['d']['member']['user']['id']] = True
+                solveState[data['d']['message_id']][data['d']['member']['user']['id']] = True
                 httpAPI.sendMessageToChannel("solved!", data['d']['channel_id'])
                 with open('solveState.json', 'w') as f:
                     f.write(json.dumps(solveState))
             elif data['d']['emoji']['name'] == '⭐':
-                bookmarkState[data['d']['message']['id']][data['d']['member']['user']['id']] = True
+                bookmarkState[data['d']['message_id']][data['d']['member']['user']['id']] = True
                 httpAPI.sendMessageToChannel("bookmarked!", data['d']['channel_id'])
 
     elif data['t'] == "MESSAGE_REACTION_REMOVE":
         if data['d']['member']['user']['id'] != api.CLIENT_ID:
             if data['d']['emoji']['name'] == '⭐':
-                bookmarkState[data['d']['message']['id']][data['d']['member']['user']['id']] = False
+                bookmarkState[data['d']['message_id']][data['d']['member']['user']['id']] = False
                 httpAPI.sendMessageToChannel("unbookmarked!", data['d']['channel_id'])
 
     elif data['t'] == "INTERACTION_CREATE":
