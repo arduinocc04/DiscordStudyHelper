@@ -3,13 +3,12 @@ import time
 import logging
 import json
 import os
-import urllib.request
 
 sendProblemBuffer = []
 with open('solveState.json', 'r') as f:
     solveState = json.loads(f.readline())
 with open('urI.txt', 'r') as f:
-    MY_IP = f.readline()
+    MY_IP = f.readline().rstrip()
 
 logger = logging.getLogger('MAIN LOGGER')
 logger.setLevel(logging.DEBUG)
