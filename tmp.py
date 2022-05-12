@@ -11,8 +11,8 @@ with open('urI.txt', 'r') as f:
 with open('testguild.txt', 'r') as f:
     GUILD = f.readline().rstrip()
 API_VERSION = 8
-#url = f"https://discord.com/api/v{API_VERSION}/applications/{CLIENT_ID}/guilds/{GUILD}/commands"
-url = f"https://discord.com/api/v{API_VERSION}/applications/{CLIENT_ID}/commands"
+url = f"https://discord.com/api/v{API_VERSION}/applications/{CLIENT_ID}/guilds/{GUILD}/commands"
+#url = f"https://discord.com/api/v{API_VERSION}/applications/{CLIENT_ID}/commands"
 
 # This is an example CHAT_INPUT or Slash Command, with a type of 1
 json = {

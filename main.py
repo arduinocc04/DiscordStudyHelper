@@ -118,6 +118,7 @@ def onMessage(data):
     elif data['t'] == 'MESSAGE_CREATE':
         if data['d']['author']['id'] == api.CLIENT_ID and data['d']['type'] == 0: #if Bot send message
             if len(data['d']['embeds']) + len(data['d']['attachments']) > 0: #if Bot reuploaded problem
+                httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "⭕")
                 members = httpAPI.getGuildMembers(data['d']['guild_id'])
                 users = []
                 for mem in members:
@@ -126,6 +127,7 @@ def onMessage(data):
                     else:
                         users.append(mem['user']['id'])
                 logger.info(f'{users=}')
+                httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "❌")
                 solveState[data['d']['id']] = {}
                 bookmarkState[data['d']['id']] = {}
                 for uid in users:
@@ -136,8 +138,6 @@ def onMessage(data):
                 with open('bookmarkState.json', 'w') as f:
                     f.write(json.dumps(bookmarkState))
 
-                httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "⭕")
-                httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "❌")
                 httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "⭐")
         else:
             while len(sendProblemBuffer):
