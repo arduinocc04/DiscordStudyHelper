@@ -200,7 +200,7 @@ class HttpAPI:
         logger.debug(f'HttpAPI replyMessage messageId: {messageId}')
         interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
         data = {
-          "content": "",
+          "content": "this",
           "type":19,
           "message_reference": {
               "message_id": messageId
