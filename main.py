@@ -34,12 +34,16 @@ def onMessage(data):
             elif data['d']['emoji']['name'] == '⭐':
                 bookmarkState[data['d']['message_id']][data['d']['user_id']] = True
                 httpAPI.sendMessageToChannel("bookmarked!", data['d']['channel_id'])
+                with open('bookmarkState.json', 'w') as f:
+                    f.write(json.dumps(bookmarkState))
 
     elif data['t'] == "MESSAGE_REACTION_REMOVE":
         if data['d']['user_id'] != api.CLIENT_ID:
             if data['d']['emoji']['name'] == '⭐':
                 bookmarkState[data['d']['message_id']][data['d']['user_id']] = False
                 httpAPI.sendMessageToChannel("unbookmarked!", data['d']['channel_id'])
+                with open('bookmarkState.json', 'w') as f:
+                    f.write(json.dumps(bookmarkState))
 
     elif data['t'] == "INTERACTION_CREATE":
         if data['d']['type'] == 2: #APPLICATION_COMMAND
