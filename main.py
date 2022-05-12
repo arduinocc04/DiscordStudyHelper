@@ -76,7 +76,7 @@ def onMessage(data):
                     if data['d']['data']['options'][0]['value'] == 'all':
                         httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
                         for a in bookmarkState.keys():
-                            cnt = 0
+                            cnt = -1 #studyhelper must solved it
                             total = 0
                             for i in bookmarkState[a]:
                                 if i: cnt += 1
