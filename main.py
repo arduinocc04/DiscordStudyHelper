@@ -82,7 +82,7 @@ def onMessage(data):
         
         
     elif data['t'] == 'MESSAGE_CREATE':
-        if data['d']['author']['id'] == api.CLIENT_ID and data['d']['type'] == 0: #if Bot reuploaded problem
+        if data['d']['author']['id'] == api.CLIENT_ID and data['d']['type'] == 0 and len(data['d']['embeds']) + len(data['d']['attachments']) > 0: #if Bot reuploaded problem
             members = httpAPI.getGuildMembers(data['d']['guild_id'])
             users = []
             for mem in members:
