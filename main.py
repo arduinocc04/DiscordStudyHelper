@@ -7,7 +7,7 @@ import os
 sendProblemBuffer = []
 with open('solveState.json', 'r') as f:
     solveState = json.loads(f.readline())
-with open('myIp.txt', 'r') as f:
+with open('urI.txt', 'r') as f:
     MY_IP = f.readline()
 
 logger = logging.getLogger('MAIN LOGGER')
