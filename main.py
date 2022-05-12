@@ -75,7 +75,7 @@ def onMessage(data):
                 if (not 'message' in data['d']) or  data['d']['message']['author']['id'] != api.CLIENT_ID: 
                     if data['d']['data']['options'][0]['value'] == 'all':
                         httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
-                        for a in solveState.keys():
+                        for a in bookmarkState.keys():
                             cnt = 0
                             total = 0
                             for i in bookmarkState[a]:
@@ -85,7 +85,7 @@ def onMessage(data):
                                 httpAPI.replyMessage(data['d']['channel_id'], a, f'{cnt}/{total}명이 북마크 함')
                     elif data['d']['data']['options'][0]['value'] == 'me':
                         httpAPI.sendInteractionMessage(data['d']['id'], data['d']['token'], 'GOT IT!')
-                        for a in solveState.keys():
+                        for a in bookmarkState.keys():
                             if bookmarkState[a][data['d']['member']['user']['id']]:
                                 httpAPI.replyMessage(data['d']['channel_id'], a)
                     
