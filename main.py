@@ -20,25 +20,25 @@ logger.addHandler(api.fileHandler)
 def onMessage(data):
     httpAPI = api.HttpAPI(api.GUILD)
     if data['t'] == "MESSAGE_REACTION_ADD":
-        if data['d']['member']['user']['id'] != api.CLIENT_ID:
+        if data['d']['user_id'] != api.CLIENT_ID:
             if data['d']['emoji']['name'] == '❌':
-                solveState[data['d']['message_id']][data['d']['member']['user']['id']] = False
+                solveState[data['d']['message_id']][data['d']['user_id']] = False
                 httpAPI.sendMessageToChannel("unsolved!", data['d']['channel_id'])
                 with open('solveState.json', 'w') as f:
                     f.write(json.dumps(solveState))
             elif data['d']['emoji']['name'] == '⭕':
-                solveState[data['d']['message_id']][data['d']['member']['user']['id']] = True
+                solveState[data['d']['message_id']][data['d']['user_id']] = True
                 httpAPI.sendMessageToChannel("solved!", data['d']['channel_id'])
                 with open('solveState.json', 'w') as f:
                     f.write(json.dumps(solveState))
             elif data['d']['emoji']['name'] == '⭐':
-                bookmarkState[data['d']['message_id']][data['d']['member']['user']['id']] = True
+                bookmarkState[data['d']['message_id']][data['d']['user_id']] = True
                 httpAPI.sendMessageToChannel("bookmarked!", data['d']['channel_id'])
 
     elif data['t'] == "MESSAGE_REACTION_REMOVE":
-        if data['d']['member']['user']['id'] != api.CLIENT_ID:
+        if data['d']['user_id'] != api.CLIENT_ID:
             if data['d']['emoji']['name'] == '⭐':
-                bookmarkState[data['d']['message_id']][data['d']['member']['user']['id']] = False
+                bookmarkState[data['d']['message_id']][data['d']['user_id']] = False
                 httpAPI.sendMessageToChannel("unbookmarked!", data['d']['channel_id'])
 
     elif data['t'] == "INTERACTION_CREATE":
@@ -59,6 +59,10 @@ def onMessage(data):
 
                     sendProblemBuffer.append((data['d']['member']['user']['id'], data['d']['token'], data['d']['id'], time.time(), data['d']['data']['options'][0]['value']))
                     logger.info(f'{sendProblemBuffer=}')
+            if data['d']['data']['name'] == 'solved':
+                for a in solveState.keys():
+                    if solveState[a][data['d']['member']['user']['id']]:
+                        httpAPI.replyMessage(data['d']['channel_id'], data['d']['member']['user']['id'])
         """
         elif data['d']['type'] == 3: #MESSAGE_COMPONENT
             if data['d']['data']['component_type'] == 2: #solve, unsolve, bookmark Interaction
@@ -82,28 +86,29 @@ def onMessage(data):
         
         
     elif data['t'] == 'MESSAGE_CREATE':
-        if data['d']['author']['id'] == api.CLIENT_ID and data['d']['type'] == 0 and len(data['d']['embeds']) + len(data['d']['attachments']) > 0: #if Bot reuploaded problem
-            members = httpAPI.getGuildMembers(data['d']['guild_id'])
-            users = []
-            for mem in members:
-                if 'bot' in mem['user'] and mem['user']['bot']:
-                    pass
-                else:
-                    users.append(mem['user']['id'])
-            logger.info(f'{users=}')
-            solveState[data['d']['id']] = {}
-            bookmarkState[data['d']['id']] = {}
-            for uid in users:
-                solveState[data['d']['id']][uid] = False
-                bookmarkState[data['d']['id']][uid] = False
-            with open('solveState.json', 'w') as f:
-                f.write(json.dumps(solveState))
-            with open('bookmarkState.json', 'w') as f:
-                f.write(json.dumps(bookmarkState))
-            
-            httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "❌")
-            httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "⭕")
-            httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "⭐")
+        if data['d']['author']['id'] == api.CLIENT_ID and data['d']['type'] == 0: #if Bot send message
+            if len(data['d']['embeds']) + len(data['d']['attachments']) > 0: #if Bot reuploaded problem
+                members = httpAPI.getGuildMembers(data['d']['guild_id'])
+                users = []
+                for mem in members:
+                    if 'bot' in mem['user'] and mem['user']['bot']:
+                        pass
+                    else:
+                        users.append(mem['user']['id'])
+                logger.info(f'{users=}')
+                solveState[data['d']['id']] = {}
+                bookmarkState[data['d']['id']] = {}
+                for uid in users:
+                    solveState[data['d']['id']][uid] = False
+                    bookmarkState[data['d']['id']][uid] = False
+                with open('solveState.json', 'w') as f:
+                    f.write(json.dumps(solveState))
+                with open('bookmarkState.json', 'w') as f:
+                    f.write(json.dumps(bookmarkState))
+
+                httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "⭕")
+                httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "❌")
+                httpAPI.createReaction(data['d']['channel_id'], data['d']['id'], "⭐")
         else:
             while len(sendProblemBuffer):
                 if time.time() - sendProblemBuffer[0][3] > 60 * 1: #User should send problem picture in 1 minute

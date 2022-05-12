@@ -160,7 +160,7 @@ class WebSocketAPI:
 
 class HttpAPI:
     def __init__(self, guild=None):
-        pass
+        self.GUILD = guild
 
     def getGuildMembers(self, guildId:int) -> dict:
         logger.debug(f'HttpAPI getGuildMembers guildId:{guildId}')
@@ -196,6 +196,18 @@ class HttpAPI:
         res = requests.post(interactionUrl, json=data, headers=headers)
         logger.info(f'HttpAPI sendMessageToChannel res {res.status_code=} {res.text=}')
 
+    def replyMessage(self, channelId:int, messageId:int):
+        logger.debug(f'HttpAPI replyMessage messageId: {messageId}')
+        interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
+        data = {
+          "content": "",
+          "message_reference": {
+              "message_id": messageId
+          }
+        }
+        res = requests.post(interactionUrl, json=data, headers=headers)
+        logger.info(f'HttpAPI replyMessage res {res.status_code=} {res.text=}')
+
     def sendPicToChannel(self, url:str, channelId:int):
         logger.debug(f'HttpAPI sendPicToChannel url:{url} channelId:{channelId}')
         interactionUrl = API_ENDPOINT + f'/channels/{channelId}/messages'
@@ -207,8 +219,6 @@ class HttpAPI:
                 'content_type': "image/jpeg"
             },
           }],
-        }
-        """
           "components": [
                 {
                     "type": 1,
@@ -235,7 +245,6 @@ class HttpAPI:
                 }
             ]
         }
-        """
         res = requests.post(interactionUrl, json=data, headers=headers)
         logger.info(f'HttpAPI sendPicToChannel res {res.status_code=} {res.text=}')
     
@@ -254,31 +263,6 @@ class HttpAPI:
                 'content_type': "image/jpeg",
             },
           }],
-          "components": [
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 2,
-                            "label": "Solved",
-                            "style": 1,
-                            "custom_id": 'solve_button'
-                        },
-                        {
-                            "type": 2,
-                            "label": "Unsolved",
-                            "style": 1,
-                            "custom_id": 'unsolve_button'
-                        },
-                        {
-                            "type": 2,
-                            "label": "Bookmark",
-                            "style": 1,
-                            "custom_id": 'bookmark_button'
-                        }
-                    ]
-                }
-            ]
         }
         res = requests.post(interactionUrl, json=data, headers=headers)
         logger.info(f'HttpAPI sendPicToChannelWithMentionAndContent res {res.status_code=} {res.text=}')

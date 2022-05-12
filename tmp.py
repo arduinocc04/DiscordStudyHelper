@@ -126,10 +126,19 @@ json = {
 }
 
 r = requests.post(url, headers=headers, json=json)
+
 json = {
     "name": "unsolved",
     "type": 1,
     "description": "Show unsolved problems by me"
+}
+r = requests.post(url, headers=headers, json=json)
+print(r.text)
+
+json = {
+    "name": "solved",
+    "type": 1,
+    "description": "Show solved problems by me"
 }
 r = requests.post(url, headers=headers, json=json)
 print(r.text)
